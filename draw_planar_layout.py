@@ -14,6 +14,7 @@ class PlanarLayoutDrawer:
         self.draw_planar_layout()
 
     def draw_planar_layout(self):
+        print("Graph is  planar.")
         if self.is_planar:
             fig, ax = plt.subplots(figsize=(8, 8))
             pos = nx.planar_layout(self.G)

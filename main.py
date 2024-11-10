@@ -4,7 +4,6 @@ from draw_spring_layout import SpringLayoutDrawer
 from draw_kamada_kawai_layout import KamadaKawaiLayoutDrawer
 from draw_planar_layout import PlanarLayoutDrawer
 
-
 class ScalableGraphDrawer:
     def __init__(self, filename):
         # Load the graph data from the JSON file

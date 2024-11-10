@@ -5,11 +5,11 @@
 
 1) Keep working on your applications. You probably have the first ideas for tackling the problem, and now it is time to test them out.
 
-2) Smart pre-processing: You saw in today's and last week's lectures that applying a layout algorithm beforehand drastically reduces the overall crossings and will help your algorithms find a good solution for an instance. Apply a layout algorithm as a pre-processing step. For Python, you could try s_gd2, or NetworkX' Kamada-Kawai or SpringEmbedder.
-3) 
-4) Smart snapping: If you pre-process an instance with a layout algorithm, you will get real coordinates for each vertex. However, the output (and most likely subsequent steps) requires that each vertex is on a position in the grid. Try implementing an algorithm that can take vertices with assigned real coordinates and map them onto the grid position. Furthermore, the grid positions should be valid positions such that no two vertices are assigned to the same position, edges don't pass through vertices, and vertices are placed inside the grid boundary.
+2) Smart pre-processing: You saw in today's and last week's lectures that applying a layout algorithm beforehand drastically reduces the overall crossings and will help your algorithms find a good solution for an instance. Apply a layout algorithm as a pre-processing step. For Python, you could try s_gd2, or NetworkX' Kamada-Kawai or SpringEmbedder. For C++, most algorithms in OGDF's energy-based layout algorithms should potentially work. For both, consider staying flexible because you could think of testing several algorithms later.
 
-5) Try computing a solution for all instances in the small benchmark (benchmark_small.zip) dataset. Prepare your numbers (and maybe a visual proof) for the next lecture. You can find the benchmark dataset on Moodle.
+3) Smart snapping: If you pre-process an instance with a layout algorithm, you will get real coordinates for each vertex. However, the output (and most likely subsequent steps) requires that each vertex is on a position in the grid. Try implementing an algorithm that can take vertices with assigned real coordinates and map them onto the grid position. Furthermore, the grid positions should be valid positions such that no two vertices are assigned to the same position, edges don't pass through vertices, and vertices are placed inside the grid boundary.
+
+4) Try computing a solution for all instances in the small benchmark (benchmark_small.zip) dataset. Prepare your numbers (and maybe a visual proof) for the next lecture. You can find the benchmark dataset on Moodle.
 
 
 

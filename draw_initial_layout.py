@@ -14,4 +14,4 @@ class InitialLayoutDrawer:
 
     def draw_initial_layout(self, graph_data):
         pos = {node["id"]: (node["x"], node["y"]) for node in graph_data["nodes"]}
-        draw_with_crossings(self.G, pos, "Initial Layout", "initial_layout.svg")
+        draw_with_crossings(self.G, pos, "Initial Layout", "initial_layout.svg", "initial")

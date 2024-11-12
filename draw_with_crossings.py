@@ -3,12 +3,14 @@ import networkx as nx
 from solve_least_crossing import solve_least_crossings
 
 
-def draw_with_crossings(G, pos, title, filename, ax=None):
+def draw_with_crossings(G, pos, title, filename, type, ax=None):
     if ax is None:
         fig, ax = plt.subplots(figsize=(8, 8))
 
     # Calculate crossings and find edge with most crossings
-    _, crossings, max_crossing_edge = solve_least_crossings(G)
+    _, crossings, max_crossing_edge = solve_least_crossings(G, type)
+    for edge, count in crossings.items():
+        print(f"Edge {edge} has {count} crossings")
 
     if max_crossing_edge and crossings:
         # Print the number of crossings for the edge with most crossings

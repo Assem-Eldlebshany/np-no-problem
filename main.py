@@ -1,3 +1,4 @@
+import os
 import json
 from draw_initial_layout import InitialLayoutDrawer
 from draw_spring_layout import SpringLayoutDrawer
@@ -10,22 +11,36 @@ class ScalableGraphDrawer:
         try:
             with open(filename, 'r') as file:
                 self.graph_data = json.load(file)
-            print("File loaded successfully.")
+            print(f"File {filename} loaded successfully.")
         except FileNotFoundError:
             print(f"Error: {filename} not found.")
             return
         except json.JSONDecodeError:
-            print("Error: JSON format in the file is incorrect.")
+            print(f"Error: JSON format in the file {filename} is incorrect.")
             return
 
-        # Initialize each layout drawer
+        # Initialize each layout drawer for the graph
         InitialLayoutDrawer(self.graph_data)
         SpringLayoutDrawer(self.graph_data)
         KamadaKawaiLayoutDrawer(self.graph_data)
         PlanarLayoutDrawer(self.graph_data)
 
+# Directory containing the graph files
+directory = "benchmark_small"
 
-# Load and draw the graph from the file
-graph_file = "file.json"
-print("Starting ScalableGraphDrawer...")
-ScalableGraphDrawer(graph_file)
+# Check if the directory exists
+if not os.path.isdir(directory):
+    print(f"Error: Directory {directory} not found.")
+else:
+    # List all JSON files in the directory
+    json_files = [f for f in os.listdir(directory) if f.endswith('.json')]
+
+    # Check if there are any JSON files to process
+    if not json_files:
+        print(f"No JSON files found in {directory}.")
+    else:
+        # Iterate over each file and process it
+        for graph_file in json_files:
+            file_path = os.path.join(directory, graph_file)
+            print(f"Starting ScalableGraphDrawer for {file_path}...")
+            ScalableGraphDrawer(file_path)

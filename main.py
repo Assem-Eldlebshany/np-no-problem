@@ -5,6 +5,7 @@ from draw_spring_layout import SpringLayoutDrawer
 from draw_kamada_kawai_layout import KamadaKawaiLayoutDrawer
 from draw_planar_layout import PlanarLayoutDrawer
 
+
 class ScalableGraphDrawer:
     def __init__(self, filename):
         # Load the graph data from the JSON file
@@ -20,13 +21,15 @@ class ScalableGraphDrawer:
             return
 
         # Initialize each layout drawer for the graph
+        PlanarLayoutDrawer(self.graph_data)
         InitialLayoutDrawer(self.graph_data)
         SpringLayoutDrawer(self.graph_data)
         KamadaKawaiLayoutDrawer(self.graph_data)
-        PlanarLayoutDrawer(self.graph_data)
+
+
 
 # Directory containing the graph files
-directory = "benchmark_small"
+directory = "testGraph"
 
 # Check if the directory exists
 if not os.path.isdir(directory):

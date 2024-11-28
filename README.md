@@ -86,5 +86,41 @@ Graph 7:
 Graph 8:  
 &nbsp; Initial: 2304  
 &nbsp; Spring: 42  
-&nbsp; Kamada: stopped code  
-&nbsp; Planar: stopped code  
+&nbsp; Kamada: stopped   
+&nbsp; Planar: stopped  
+
+Graph 10:  
+&nbsp; Initial: 1789  
+&nbsp; Spring: 75  
+&nbsp; Kamada: 33  
+&nbsp; Planar: 0  
+
+Graph 11:  
+&nbsp; Initial: 997  
+&nbsp; Spring: 35  
+&nbsp; Kamada: stopped  
+&nbsp; Planar: 0  
+
+Graph 12:  
+&nbsp; Initial: 1797  
+&nbsp; Spring: 88  
+&nbsp; Kamada: 52  
+&nbsp; Planar: DNE  
+
+Graph 13:  
+&nbsp; Initial: 2561  
+&nbsp; Spring: 806  
+&nbsp; Kamada: stopped  
+&nbsp; Planar: DNE  
+
+Graph 14:  
+&nbsp; Initial: 5034  
+&nbsp; Spring: stopped  
+&nbsp; Kamada: stopped  
+&nbsp; Planar: 0  
+
+Graph 15:  
+&nbsp; Initial: 1382  
+&nbsp; Spring: 83  
+&nbsp; Kamada: 549  
+&nbsp; Planar: DNE  

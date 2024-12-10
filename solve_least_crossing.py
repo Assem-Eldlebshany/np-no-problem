@@ -3,7 +3,7 @@ from crossing_utils import calculate_crossings, get_edge_with_most_crossings
 
 
 def solve_least_crossings(graph, type):
-    if type == "initial":
+    if type == "initial" or type == "optimized":
         pos = nx.get_node_attributes(graph, 'pos')
     if type == "spring":
         pos = nx.spring_layout(graph, seed=42)

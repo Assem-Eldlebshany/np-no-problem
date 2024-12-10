@@ -4,6 +4,7 @@ from draw_initial_layout import InitialLayoutDrawer
 from draw_spring_layout import SpringLayoutDrawer
 from draw_kamada_kawai_layout import KamadaKawaiLayoutDrawer
 from draw_planar_layout import PlanarLayoutDrawer
+from kamada_gradient import GradientLayoutDrawer
 
 
 class ScalableGraphDrawer:
@@ -21,11 +22,11 @@ class ScalableGraphDrawer:
             return
 
         # Initialize each layout drawer for the graph
-        PlanarLayoutDrawer(self.graph_data)
-        InitialLayoutDrawer(self.graph_data)
-        SpringLayoutDrawer(self.graph_data)
-        KamadaKawaiLayoutDrawer(self.graph_data)
-
+        #PlanarLayoutDrawer(self.graph_data)
+        #InitialLayoutDrawer(self.graph_data)
+        #SpringLayoutDrawer(self.graph_data)
+        #KamadaKawaiLayoutDrawer(self.graph_data)
+        GradientLayoutDrawer(self.graph_data, 200, 10)
 
 
 # Directory containing the graph files

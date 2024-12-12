@@ -26,11 +26,11 @@ class ScalableGraphDrawer:
         #InitialLayoutDrawer(self.graph_data)
         #SpringLayoutDrawer(self.graph_data)
         #KamadaKawaiLayoutDrawer(self.graph_data)
-        GradientLayoutDrawer(self.graph_data, 200, 10)
+        GradientLayoutDrawer(self.graph_data, alpha=1, learning_rate=0.1, max_iter=1000)
 
 
 # Directory containing the graph files
-directory = "testGraph"
+directory = "benchmark_small"
 
 # Check if the directory exists
 if not os.path.isdir(directory):

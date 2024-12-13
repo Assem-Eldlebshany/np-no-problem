@@ -35,6 +35,8 @@ class GradientLayoutDrawer:
         return pos_array
 
     def optimize_layout(self):
+        import os 
+        if not os.path.isdir('slideshow'): os.mkdir('slideshow')
         # Flatten the initial positions into a NumPy array
         pos_array = np.array([self.pos[node] for node in self.G.nodes()], dtype=np.float64)
 
@@ -49,7 +51,7 @@ class GradientLayoutDrawer:
             pos_array -= self.learning_rate * gradient
 
             # Apply repulsion to avoid node overlap
-            pos_array = self.apply_repulsion(pos_array, min_distance)
+            # pos_array = self.apply_repulsion(pos_array, min_distance)
 
             # Debugging: print objective value every few iterations
             if iteration % 10 == 0:
@@ -62,7 +64,7 @@ class GradientLayoutDrawer:
                 # Draw the graph with updated positions
                 nx.draw(self.G, {node: pos_array[i] for i, node in enumerate(self.G.nodes())}, with_labels=True)
                 plt.title(f"Iteration {iteration}")
-                plt.savefig(f"layout_iter_{iteration}.png")
+                plt.savefig(f"slideshow/layout_iter_{iteration}.png")
 
         # Update the node positions back to dictionary format
         for i, node in enumerate(self.G.nodes()):
@@ -73,14 +75,17 @@ class GradientLayoutDrawer:
 
 
     def compute_gradient(self, pos_array):
+        from itertools import combinations
         gradient = np.zeros_like(pos_array, dtype=np.float64)  # Ensure gradient is float
-        for u, v in self.G.edges():
+        for u, v in combinations(self.G.nodes(),2):
             pu, pv = pos_array[u], pos_array[v]
             dist = np.linalg.norm(pu - pv)
             if dist == 0:
                 continue
             # Gradient of ||pu - pv|| - alpha * log(||pu - pv||)
-            grad_uv = (pu - pv) / dist - (self.alpha / dist) * (pu - pv)
+            if self.G.has_edge(u,v):
+                grad_uv = (pu - pv) / dist - (self.alpha / (dist * dist)) * (pu - pv)
+            else: grad_uv = - (self.alpha / (dist * dist)) * (pu - pv)
             gradient[u] += grad_uv
             gradient[v] -= grad_uv
         return gradient

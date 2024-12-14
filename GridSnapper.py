@@ -1,70 +1,50 @@
 import numpy as np
 import networkx as nx
+from collections import defaultdict
 
 
 class GridSnapper:
     def __init__(self, graph, positions, width, height):
-        """
-        Initialize the GridSnapper with the graph, current positions, and graph dimensions.
-
-        :param graph: NetworkX graph
-        :param positions: Dictionary of node positions
-        :param width: Width of the graph layout (max x-coordinate)
-        :param height: Height of the graph layout (max y-coordinate)
-        """
         self.G = graph
         self.pos = positions
         self.width = width
         self.height = height
 
-    def snap_to_grid(self, snap_radius=0.5):
+    def snap_to_grid(self):
         """
-        Snap nodes to integer grid coordinates.
-
-        :param snap_radius: Radius around grid point to search for nodes (default 0.5).
-        :return: Updated positions dictionary.
+        Snap nodes to the nearest integer grid point.
+        If two or more nodes want the same position, none of them are snapped.
+        :return: Updated positions dictionary
         """
         # Print initial positions
         print("Initial Positions:")
         for node, pos in self.pos.items():
             print(f"Node {node}: {pos}")
 
-        # Convert current positions to numpy array for easier manipulation
-        pos_array = np.array(list(self.pos.values()))
+        # Dictionary to store proposed snaps and resolve conflicts
+        snap_map = defaultdict(list)
 
-        print(f"\nGrid Bounds:")
-        print(f"Width: 0 to {self.width}, Height: 0 to {self.height}")
-        print(f"Snap Radius: {snap_radius}")
+        # Iterate over all nodes to find their closest integer position
+        for node, pos in self.pos.items():
+            # Compute the nearest integer position
+            snapped_pos = tuple(np.round(pos).astype(int))
+
+            # Add this node to the snap_map for the snapped position
+            snap_map[snapped_pos].append(node)
 
         # Counter for snapped nodes
         snapped_nodes_count = 0
 
-        # Iterate over all integer grid points within the specified width and height
-        for x in range(self.width + 1):
-            for y in range(self.height + 1):
-                # Define the search region around the grid point (x, y)
-                region_min = np.array([x - snap_radius, y - snap_radius])
-                region_max = np.array([x + snap_radius, y + snap_radius])
-
-                # Find nodes within this region
-                nodes_in_region = [
-                    node for node, pos in self.pos.items()
-                    if np.all(pos >= region_min) and np.all(pos <= region_max)
-                ]
-
-                # Debugging for each grid point
-                if nodes_in_region:
-                    print(f"\nGrid Point ({x}, {y}):")
-                    print(f"Region: Min {region_min}, Max {region_max}")
-                    print(f"Nodes in region: {nodes_in_region}")
-
-                # Snap to the grid point if exactly one node is found
-                if len(nodes_in_region) == 1:
-                    node = nodes_in_region[0]
-                    old_pos = self.pos[node]
-                    self.pos[node] = np.array([x, y])
-                    snapped_nodes_count += 1
-                    print(f"SNAPPED Node {node}: {old_pos} -> {self.pos[node]}")
+        # Resolve conflicts: only snap nodes if the snapped position is unique
+        for snapped_pos, nodes in snap_map.items():
+            if len(nodes) == 1:  # Only one node wants this position
+                node = nodes[0]
+                old_pos = self.pos[node]
+                self.pos[node] = np.array(snapped_pos)  # Snap to the integer position
+                snapped_nodes_count += 1
+                print(f"SNAPPED Node {node}: {old_pos} -> {self.pos[node]}")
+            else:
+                print(f"CONFLICT at {snapped_pos}: Nodes {nodes} - None snapped.")
 
         # Print final summary
         print(f"\nGrid Snapping Summary:")
@@ -78,17 +58,15 @@ class GridSnapper:
         return self.pos
 
 
-def apply_grid_snapping(graph, positions, width, height, snap_radius=0.5):
+def apply_grid_snapping(graph, positions, width, height):
     """
-    Convenience function to apply grid snapping.
-
+    Apply the optimized grid snapping logic to the given graph and positions.
     :param graph: NetworkX graph
     :param positions: Dictionary of node positions
-    :param width: Width of the graph layout (max x-coordinate)
-    :param height: Height of the graph layout (max y-coordinate)
-    :param snap_radius: Radius around grid point to search for nodes
+    :param width: Width of the graph layout
+    :param height: Height of the graph layout
     :return: Updated positions
     """
     print("\n--- Starting Grid Snapping ---")
     snapper = GridSnapper(graph, positions, width, height)
-    return snapper.snap_to_grid(snap_radius)
+    return snapper.snap_to_grid()

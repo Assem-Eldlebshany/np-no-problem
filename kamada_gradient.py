@@ -2,6 +2,7 @@ import matplotlib.pyplot as plt
 import networkx as nx
 import numpy as np
 from draw_with_crossings import draw_with_crossings
+from GridSnapper import apply_grid_snapping
 
 
 class GradientLayoutDrawer:
@@ -11,6 +12,10 @@ class GradientLayoutDrawer:
             self.G.add_node(node["id"], pos=(node["x"], node["y"]))
         for edge in graph_data["edges"]:
             self.G.add_edge(edge["source"], edge["target"])
+
+        # Store width and height from graph_data
+        self.width = graph_data.get('width', 10)  # Default to 10 if not specified
+        self.height = graph_data.get('height', 10)  # Default to 10 if not specified
 
         # Load initial positions from graph data
         self.pos = {node["id"]: (node["x"], node["y"]) for node in graph_data["nodes"]}
@@ -35,7 +40,7 @@ class GradientLayoutDrawer:
         return pos_array
 
     def optimize_layout(self):
-        import os 
+        import os
         if not os.path.isdir('slideshow'): os.mkdir('slideshow')
         # Flatten the initial positions into a NumPy array
         pos_array = np.array([self.pos[node] for node in self.G.nodes()], dtype=np.float64)
@@ -61,31 +66,56 @@ class GradientLayoutDrawer:
                 # Clear the figure before drawing the next iteration
                 plt.clf()
 
+                # Set up the plot with gridlines
+                plt.figure(figsize=(10, 10))
+                plt.grid(True, linestyle='--', linewidth=5, color='black')
+                plt.gca().set_axisbelow(True)  # Put gridlines behind other elements
+
                 # Draw the graph with updated positions
-                nx.draw(self.G, {node: pos_array[i] for i, node in enumerate(self.G.nodes())}, with_labels=True)
+                node_positions = {node: pos_array[i] for i, node in enumerate(self.G.nodes())}
+                nx.draw(self.G, node_positions, with_labels=True, node_color='purple',
+                        node_size=200, font_size=0, font_weight='bold')
+                nx.draw_networkx_edges(self.G, node_positions, edge_color='gray')
+
                 plt.title(f"Iteration {iteration}")
+                plt.tight_layout()
                 plt.savefig(f"slideshow/layout_iter_{iteration}.png")
+                plt.close()  # Close the figure to free up memory
 
         # Update the node positions back to dictionary format
         for i, node in enumerate(self.G.nodes()):
             self.pos[node] = pos_array[i]
 
-        # Draw the optimized graph
-        draw_with_crossings(self.G, self.pos, "Optimized Layout", "optimized_layout.svg", "optimized")
+        # Apply grid snapping to the final layout
+        self.pos = apply_grid_snapping(self.G, self.pos, self.width, self.height)
 
+        # Draw the snapped graph layout
+        plt.figure(figsize=(10, 10))
+        plt.grid(True, linestyle='--', linewidth=1, color='black')
+        plt.gca().set_axisbelow(True)  # Put gridlines behind other elements
+
+        nx.draw(self.G, self.pos, with_labels=True, node_color='blue',
+                node_size=300, font_size=10, font_weight='bold')
+        nx.draw_networkx_edges(self.G, self.pos, edge_color='gray')
+
+        plt.title("Final Snapped Layout")
+        plt.tight_layout()
+        plt.savefig("final_snapped_layout.png")  # Save the snapped layout as an image
+        plt.show()  # Show the snapped layout for immediate feedback
 
     def compute_gradient(self, pos_array):
         from itertools import combinations
         gradient = np.zeros_like(pos_array, dtype=np.float64)  # Ensure gradient is float
-        for u, v in combinations(self.G.nodes(),2):
+        for u, v in combinations(self.G.nodes(), 2):
             pu, pv = pos_array[u], pos_array[v]
             dist = np.linalg.norm(pu - pv)
             if dist == 0:
                 continue
             # Gradient of ||pu - pv|| - alpha * log(||pu - pv||)
-            if self.G.has_edge(u,v):
+            if self.G.has_edge(u, v):
                 grad_uv = (pu - pv) / dist - (self.alpha / (dist * dist)) * (pu - pv)
-            else: grad_uv = - (self.alpha / (dist * dist)) * (pu - pv)
+            else:
+                grad_uv = - (self.alpha / (dist * dist)) * (pu - pv)
             gradient[u] += grad_uv
             gradient[v] -= grad_uv
         return gradient

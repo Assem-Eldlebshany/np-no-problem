@@ -30,7 +30,7 @@ class ScalableGraphDrawer:
 
 
 # Directory containing the graph files
-directory = "benchmark_small"
+directory = "testGraph"
 
 # Check if the directory exists
 if not os.path.isdir(directory):

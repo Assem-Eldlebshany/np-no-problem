@@ -103,6 +103,9 @@ class GradientLayoutDrawer:
         plt.savefig("final_snapped_layout.png")  # Save the snapped layout as an image
         plt.show()  # Show the snapped layout for immediate feedback
 
+        draw_with_crossings(self.G, self.pos, "Kamada-Kawai Grid Snapped Layout", "kamada_kawai_snapped_layout.svg",
+                            "kamada")
+
     def compute_gradient(self, pos_array):
         from itertools import combinations
         gradient = np.zeros_like(pos_array, dtype=np.float64)  # Ensure gradient is float

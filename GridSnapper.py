@@ -57,6 +57,36 @@ class GridSnapper:
 
         return self.pos
 
+    def match_to_grid(self, radius=3):
+        from itertools import product
+        edges = set()
+
+        # Generate bipartite graph of vertices to grid points. Only look out to radius 3.
+        # Weight of edges is l1 distance
+        # We convert to complex numbers because they are hashable, and allow vector addition
+        manhattan = lambda p1, p2: abs(p1.real - p2.real) + abs(p1.imag - p2.imag)
+        for v, pos in self.pos.items():
+            closest = complex(round(pos[0]), round(pos[1]))
+            rrange = range(-radius, radius + 1)
+            for dx, dy in product(rrange, rrange):
+                newpoint = closest + complex(dx, dy)
+                dist = manhattan(closest, newpoint)
+
+                edges.add((v, newpoint, dist))
+
+        # Creates a min weight maximal matching of vertices to grid points.
+        MatchGraph = nx.Graph()
+        MatchGraph.add_weighted_edges_from(edges)
+
+        # For some reason, networkx return edges in a random order; make sure they are (vertex, gridpoint)
+        matched = {(v, gridpoint) if v in self.pos else (gridpoint, v) for v, gridpoint in
+                   nx.min_weight_matching(MatchGraph)}
+
+        pos = {v: np.array([p.real, p.imag], dtype=int) for v, p in matched}
+
+        self.pos = pos
+        return pos
+
 
 def apply_grid_snapping(graph, positions, width, height):
     """
@@ -69,4 +99,4 @@ def apply_grid_snapping(graph, positions, width, height):
     """
     print("\n--- Starting Grid Snapping ---")
     snapper = GridSnapper(graph, positions, width, height)
-    return snapper.snap_to_grid()
+    return snapper.match_to_grid()

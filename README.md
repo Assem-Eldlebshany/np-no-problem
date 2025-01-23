@@ -87,7 +87,7 @@ Graph 8:
 &nbsp; Initial: 2304  
 &nbsp; Spring: 42  
 &nbsp; Kamada: stopped   
-&nbsp; Planar: stopped  
+&nbsp; Planar: 0  
 
 Graph 10:  
 &nbsp; Initial: 1789  

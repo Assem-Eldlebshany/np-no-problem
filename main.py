@@ -5,7 +5,7 @@ from draw_spring_layout import SpringLayoutDrawer
 from draw_kamada_kawai_layout import KamadaKawaiLayoutDrawer
 from draw_planar_layout import PlanarLayoutDrawer
 from kamada_gradient import GradientLayoutDrawer
-
+from simluated_annealing import SimulatedAnnealingDrawer
 
 class ScalableGraphDrawer:
     def __init__(self, filename):
@@ -22,12 +22,12 @@ class ScalableGraphDrawer:
             return
 
         # Initialize each layout drawer for the graph
-        #PlanarLayoutDrawer(self.graph_data)
-        #InitialLayoutDrawer(self.graph_data)
-        #SpringLayoutDrawer(self.graph_data)
-        #KamadaKawaiLayoutDrawer(self.graph_data)
-        GradientLayoutDrawer(self.graph_data, alpha=1, learning_rate=0.1, max_iter=1000)
-
+        # PlanarLayoutDrawer(self.graph_data)
+        # InitialLayoutDrawer(self.graph_data)
+        # SpringLayoutDrawer(self.graph_data)
+        # KamadaKawaiLayoutDrawer(self.graph_data)
+        # GradientLayoutDrawer(self.graph_data, alpha=1, learning_rate=0.1, max_iter=1000)
+        SimulatedAnnealingDrawer(self.graph_data)
 
 # Directory containing the graph files
 directory = "testGraph"

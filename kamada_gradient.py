@@ -14,8 +14,8 @@ class GradientLayoutDrawer:
             self.G.add_edge(edge["source"], edge["target"])
 
         # Store width and height from graph_data
-        self.width = graph_data.get('width', 10)  # Default to 10 if not specified
-        self.height = graph_data.get('height', 10)  # Default to 10 if not specified
+        self.width = graph_data.get('width', 10)
+        self.height = graph_data.get('height', 10)
 
         # Load initial positions from graph data
         self.pos = {node["id"]: (node["x"], node["y"]) for node in graph_data["nodes"]}
@@ -28,15 +28,13 @@ class GradientLayoutDrawer:
         for i, pi in enumerate(pos_array):
             for j, pj in enumerate(pos_array):
                 if i >= j:
-                    continue  # Only check each pair once
-
+                    continue
                 dist = np.linalg.norm(pi - pj)
                 if dist < min_distance:  # If nodes are too close
                     # Apply a repulsion force to push nodes apart
                     repulsion = (min_distance - dist) * (pi - pj) / dist
                     pos_array[i] += repulsion / 2
                     pos_array[j] -= repulsion / 2
-
         return pos_array
 
     def optimize_layout(self):
@@ -56,7 +54,7 @@ class GradientLayoutDrawer:
             pos_array -= self.learning_rate * gradient
 
             # Apply repulsion to avoid node overlap
-            # pos_array = self.apply_repulsion(pos_array, min_distance)
+            pos_array = self.apply_repulsion(pos_array, min_distance)
 
             # Debugging: print objective value every few iterations
             if iteration % 10 == 0:
@@ -80,7 +78,7 @@ class GradientLayoutDrawer:
                 plt.title(f"Iteration {iteration}")
                 plt.tight_layout()
                 plt.savefig(f"slideshow/layout_iter_{iteration}.png")
-                plt.close()  # Close the figure to free up memory
+                plt.close()
 
         # Update the node positions back to dictionary format
         for i, node in enumerate(self.G.nodes()):
@@ -112,6 +110,7 @@ class GradientLayoutDrawer:
         for u, v in combinations(self.G.nodes(), 2):
             pu, pv = pos_array[u], pos_array[v]
             dist = np.linalg.norm(pu - pv)
+            # dist = np.sqrt(np.square(pu - pv))
             if dist == 0:
                 continue
             # Gradient of ||pu - pv|| - alpha * log(||pu - pv||)

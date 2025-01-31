@@ -19,22 +19,21 @@ class KamadaKawaiLayoutDrawer:
         self.draw_kamada_kawai_layout()
 
     def draw_kamada_kawai_layout(self):
-        # Compute the Kamada-Kawai layout
+        # Compute the Kamada-Kawai layout (values in range [-1,1])
         pos = nx.kamada_kawai_layout(self.G)
 
-        # Apply grid snapping to the computed positions
+        # Map positions from [-1,1] to [0, width] and [0, height]
+        for node, (x, y) in pos.items():
+            pos[node] = (
+                (x + 1) / 2 * self.width,  # Scale x from [-1,1] to [0, width]
+                (y + 1) / 2 * self.height  # Scale y from [-1,1] to [0, height]
+            )
+
+        # Apply grid snapping
         pos = apply_grid_snapping(self.G, pos, self.width, self.height)
 
         # Draw the graph with grid-snapped positions
         draw_with_crossings(self.G, pos, "Kamada-Kawai Grid Snapped Layout", "kamada_kawai_snapped_layout.svg",
                             "kamada")
 
-        # Optionally visualize it
-        plt.figure(figsize=(10, 10))
-        plt.grid(True, linestyle='--', linewidth=1, color='black')  # Gridlines
-        plt.gca().set_axisbelow(True)  # Grid behind the nodes
-        nx.draw(self.G, pos, with_labels=True, node_color='blue', node_size=300, font_size=10, font_weight='bold')
-        plt.title("Kamada-Kawai Layout with Grid Snapping")
-        plt.tight_layout()
-        plt.savefig("kamada_kawai_snapped_layout.png")
         plt.show()

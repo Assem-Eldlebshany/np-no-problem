@@ -5,7 +5,7 @@ import numpy as np
 from solve_least_crossing import solve_least_crossings
 
 class SimulatedAnnealingDrawer:
-    def __init__(self, graph_data, max_iterations=5000, initial_temp=100.0, cooling_rate=0.95):
+    def __init__(self, graph_data, max_iterations=10, initial_temp=100.0, cooling_rate=0.95):
         self.graph_data = graph_data
         self.max_iterations = max_iterations
         self.temp = initial_temp

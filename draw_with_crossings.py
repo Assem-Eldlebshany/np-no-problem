@@ -30,6 +30,5 @@ def draw_with_crossings(G, pos, title, filename, type, ax=None):
         nx.draw_networkx_labels(G, pos, font_size=8, font_color="white", ax=ax)
 
     plt.title(title)
-    plt.savefig(filename, format="svg")
     if ax is None:
         plt.show()

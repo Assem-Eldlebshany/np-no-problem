@@ -3,6 +3,9 @@ import networkx as nx
 import numpy as np
 from draw_with_crossings import draw_with_crossings
 from GridSnapper import apply_grid_snapping
+from scipy.sparse import csr_matrix
+from scipy.sparse.csgraph import shortest_path
+from joblib import Parallel, delayed
 
 
 class GradientLayoutDrawer:
@@ -25,14 +28,16 @@ class GradientLayoutDrawer:
         self.optimize_layout()
 
     def apply_repulsion(self, pos_array, min_distance):
-        for i, pi in enumerate(pos_array):
-            for j, pj in enumerate(pos_array):
-                if i >= j:
-                    continue
-                dist = np.linalg.norm(pi - pj)
+        """
+        Apply repulsion forces to prevent node overlap.
+        """
+        n = len(pos_array)
+        for i in range(n):
+            for j in range(i + 1, n):
+                dist = np.linalg.norm(pos_array[i] - pos_array[j])
                 if dist < min_distance:  # If nodes are too close
                     # Apply a repulsion force to push nodes apart
-                    repulsion = (min_distance - dist) * (pi - pj) / dist
+                    repulsion = (min_distance - dist) * (pos_array[i] - pos_array[j]) / dist
                     pos_array[i] += repulsion / 2
                     pos_array[j] -= repulsion / 2
         return pos_array
@@ -40,14 +45,18 @@ class GradientLayoutDrawer:
     def optimize_layout(self):
         import os
         if not os.path.isdir('slideshow'): os.mkdir('slideshow')
+
         # Flatten the initial positions into a NumPy array
         pos_array = np.array([self.pos[node] for node in self.G.nodes()], dtype=np.float64)
 
         # Minimum allowed distance between nodes (prevention of overlap)
-        min_distance = 0.1  # Adjust this based on your graph size
+        min_distance = 0.1
+
+        # Precompute adjacency matrix for efficient gradient calculation
+        adjacency_matrix = nx.adjacency_matrix(self.G, weight=None)  # Use this instead of to_scipy_sparse_matrix
 
         for iteration in range(self.max_iter):
-            gradient = self.compute_gradient(pos_array)
+            gradient = self.compute_gradient(pos_array, adjacency_matrix)
             gradient_norm = np.linalg.norm(gradient)
 
             # Update positions using gradient descent
@@ -58,7 +67,7 @@ class GradientLayoutDrawer:
 
             # Debugging: print objective value every few iterations
             if iteration % 10 == 0:
-                obj_val = self.compute_objective(pos_array)
+                obj_val = self.compute_objective(pos_array, adjacency_matrix)
                 print(f"Iteration {iteration}, Objective Value: {obj_val}, Gradient Norm: {gradient_norm}")
 
                 # Clear the figure before drawing the next iteration
@@ -104,30 +113,47 @@ class GradientLayoutDrawer:
         draw_with_crossings(self.G, self.pos, "Kamada-Kawai Grid Snapped Layout", "kamada_kawai_snapped_layout.svg",
                             "kamada")
 
-    def compute_gradient(self, pos_array):
-        from itertools import combinations
-        gradient = np.zeros_like(pos_array, dtype=np.float64)  # Ensure gradient is float
-        for u, v in combinations(self.G.nodes(), 2):
-            pu, pv = pos_array[u], pos_array[v]
-            dist = np.linalg.norm(pu - pv)
-            # dist = np.sqrt(np.square(pu - pv))
-            if dist == 0:
-                continue
-            # Gradient of ||pu - pv|| - alpha * log(||pu - pv||)
-            if self.G.has_edge(u, v):
-                grad_uv = (pu - pv) / dist - (self.alpha / (dist * dist)) * (pu - pv)
-            else:
-                grad_uv = - (self.alpha / (dist * dist)) * (pu - pv)
-            gradient[u] += grad_uv
-            gradient[v] -= grad_uv
+    def compute_gradient(self, pos_array, adjacency_matrix):
+        """
+        Compute the gradient using vectorized operations.
+        """
+        n = len(pos_array)
+        gradient = np.zeros_like(pos_array, dtype=np.float64)
+
+        # Compute pairwise distances
+        diff = pos_array[:, np.newaxis, :] - pos_array[np.newaxis, :, :]
+        dist = np.linalg.norm(diff, axis=2)
+
+        # Avoid division by zero
+        dist[dist == 0] = 1e-10
+
+        # Compute gradient for connected edges
+        grad_connected = (diff / dist[:, :, np.newaxis]) * adjacency_matrix.toarray()[:, :, np.newaxis]
+        grad_connected = np.sum(grad_connected, axis=1)
+
+        # Compute gradient for non-connected edges
+        grad_non_connected = - (self.alpha / (dist ** 2))[:, :, np.newaxis] * diff
+        grad_non_connected = np.sum(grad_non_connected, axis=1)
+
+        # Combine gradients
+        gradient = grad_connected + grad_non_connected
+
         return gradient
 
-    def compute_objective(self, pos_array):
-        obj_val = 0
-        for u, v in self.G.edges():
-            pu, pv = pos_array[u], pos_array[v]
-            dist = np.linalg.norm(pu - pv)
-            if dist == 0:  # Avoid log(0)
-                continue
-            obj_val += dist - self.alpha * np.log(dist)
-        return obj_val
+    def compute_objective(self, pos_array, adjacency_matrix):
+        """
+        Compute the objective value using vectorized operations.
+        """
+        diff = pos_array[:, np.newaxis, :] - pos_array[np.newaxis, :, :]
+        dist = np.linalg.norm(diff, axis=2)
+
+        # Avoid log(0)
+        dist[dist == 0] = 1e-10
+
+        # Compute objective for connected edges
+        obj_connected = np.sum(dist * adjacency_matrix.toarray())
+
+        # Compute objective for non-connected edges
+        obj_non_connected = - self.alpha * np.sum(np.log(dist))
+
+        return obj_connected + obj_non_connected

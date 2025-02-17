@@ -1,126 +1,57 @@
 # np-no-problem
 
-### run this command in your terminal after cloning the repo
-`pip install -r requirements.txt`
+## How to Run
+### Install Dependencies
 
-Graph 1:  
-&nbsp; Initial: 6  
-&nbsp; Spring: 2  
-&nbsp; Kamada: 1  
-&nbsp; Planar: DNE  
+After cloning the repository, navigate to the project directory in your terminal and run the following command to install the required dependencies:
 
-Graph 2:  
-&nbsp; Initial: 17  
-&nbsp; Spring: 7  
-&nbsp; Kamada: 4  
-&nbsp; Planar: DNE  
+```bash
+pip install -r requirements.txt
+```
 
-Graph 3:  
-&nbsp; Initial: 5   
-&nbsp; Spring: 5  
-&nbsp; Kamada: 4  
-&nbsp; Planar:  DNE
+# Graph Drawing Contest
 
-Graph 4:  
-&nbsp; Initial: 14   
-&nbsp; Spring: 1  
-&nbsp; Kamada: 1  
-&nbsp; Planar: 0  
+This repository contains a solution to the Graph Drawing Contest, where the goal was to minimize edge crossings in a 2D graph layout. The graph is represented using a set of vertices and edges, provided in a JSON file. The challenge was to rearrange the graph layout such that the number of edge crossings is minimized while preserving the graph's structure.
 
-Graph 5:  
-&nbsp; Initial: 22  
-&nbsp; Spring: 0  
-&nbsp; Kamada: 0  
-&nbsp; Planar: 0
+## Project Overview
 
-Graph 6:  
-&nbsp; Initial: 43  
-&nbsp; Spring: 2  
-&nbsp; Kamada: 1  
-&nbsp; Planar: 0  
+The project uses multiple algorithms to take in a graph's **vertices** and **edges** as input in JSON format, then generates an optimized layout with the minimum number of edge crossings. The output is a new JSON file with updated vertex coordinates.
 
-New Graphs
+## Input Format
 
-Graph 1:  
-&nbsp; Initial: 5  
-&nbsp; Spring: 3  
-&nbsp; Kamada: 3  
-&nbsp; Planar: 0  
+The input file should be in JSON format, containing two primary components:
 
-Graph 2:  
-&nbsp; Initial: 9  
-&nbsp; Spring: 0  
-&nbsp; Kamada: 7  
-&nbsp; Planar: 0  
+- **vertices**: A list of vertices, each with an `id` and initial `x`, `y` coordinates.
+- **edges**: A list of edges, each defined by a `source` and `target` referencing the vertex `id`. 
+- The input is provided in JSON format with the following structure:
 
-Graph 3:  
-&nbsp; Initial: 9  
-&nbsp; Spring: 2  
-&nbsp; Kamada: 2  
-&nbsp; Planar: DNE  
+```json
+{
+  "nodes": [
+    {"id": 1, "x": 0, "y": 0},
+    {"id": 2, "x": 1, "y": 1},
+    {"id": 3, "x": 2, "y": 0}
+  ],
+  "edges": [
+    {"source": 1, "target": 2},
+    {"source": 2, "target": 3},
+    {"source": 3, "target": 1}
+  ]
+}
+```
+## Techniques Used
 
-Graph 4:  
-&nbsp; Initial: 18  
-&nbsp; Spring: 3  
-&nbsp; Kamada: 3  
-&nbsp; Planar: DNE  
+The following techniques were implemented to optimize the graph layout and minimize edge crossings:
 
-Graph 5:  
-&nbsp; Initial: 34  
-&nbsp; Spring: 1  
-&nbsp; Kamada: 1  
-&nbsp; Planar: DNE   
+### 1. Kamada-Kawai Layout
 
-Graph 6:  
-&nbsp; Initial: 22  
-&nbsp; Spring: 10  
-&nbsp; Kamada: 7  
-&nbsp; Planar: DNE  
+A force-directed layout algorithm that minimizes the energy of the system, where nodes are treated as connected by springs. The goal of the Kamada-Kawai algorithm is to position nodes in a way that reflects the pairwise distances between them, while also minimizing edge crossings in the layout. It computes node positions by considering the graph as a spring system where the optimal positions of nodes minimize the total spring energy.
 
-Graph 7:  
-&nbsp; Initial: 22  
-&nbsp; Spring: 4  
-&nbsp; Kamada: 3  
-&nbsp; Planar: 0  
+### 2. Simulated Annealing
 
-Graph 8:  
-&nbsp; Initial: 2304  
-&nbsp; Spring: 42  
-&nbsp; Kamada: stopped   
-&nbsp; Planar: 0  
+An optimization algorithm that attempts to minimize the number of edge crossings by adjusting node positions iteratively based on temperature-controlled random movements. The algorithm works by exploring different configurations and gradually reducing the "temperature" to allow smaller changes as the system approaches an optimal layout. This method can efficiently search for the optimal placement of nodes by balancing exploration of different configurations with a steady reduction in randomness.
 
-Graph 10:  
-&nbsp; Initial: 1789  
-&nbsp; Spring: 75  
-&nbsp; Kamada: 33  
-&nbsp; Planar: 0  
+### 3. Spring Layout
 
-Graph 11:  
-&nbsp; Initial: 997  
-&nbsp; Spring: 35  
-&nbsp; Kamada: stopped  
-&nbsp; Planar: 0  
+A classical physics-based algorithm where nodes repel each other, and edges act like springs, pulling nodes together, resulting in a balanced layout. In this method, the forces applied to the nodes are computed iteratively to achieve a configuration where nodes are spaced apart without overlap, and the edges between them are as evenly distributed as possible. This technique is widely used for visualizing graph structures in a way that is easy to interpret.
 
-Graph 12:  
-&nbsp; Initial: 1797  
-&nbsp; Spring: 88  
-&nbsp; Kamada: 52  
-&nbsp; Planar: DNE  
-
-Graph 13:  
-&nbsp; Initial: 2561  
-&nbsp; Spring: 806  
-&nbsp; Kamada: stopped  
-&nbsp; Planar: DNE  
-
-Graph 14:  
-&nbsp; Initial: 5034  
-&nbsp; Spring: stopped  
-&nbsp; Kamada: stopped  
-&nbsp; Planar: 0  
-
-Graph 15:  
-&nbsp; Initial: 1382  
-&nbsp; Spring: 83  
-&nbsp; Kamada: 549  
-&nbsp; Planar: DNE  

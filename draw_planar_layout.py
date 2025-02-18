@@ -109,34 +109,39 @@ class PlanarLayoutDrawer:
         if self.is_planar:
             print("Graph is planar.")
 
-            # Create figure and axis
-            fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(15, 7))
+            # Create figure and axis - now 2x2 grid
+            fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, figsize=(15, 15))
 
-            # Draw original layout
-            pos_original = nx.spring_layout(self.G)  # Use spring layout for original
-            nx.draw_networkx_nodes(self.G, pos_original, node_size=50, node_color="blue", ax=ax1)
-            nx.draw_networkx_edges(self.G, pos_original, ax=ax1)
-            nx.draw_networkx_labels(self.G, pos_original, font_size=8, font_color="white", ax=ax1)
-            ax1.set_title("Original Layout")
+            # Draw initial graph from input positions
+            initial_pos = self.node_positions
+            nx.draw_networkx_nodes(self.G, initial_pos, node_size=50, node_color="blue", ax=ax1)
+            nx.draw_networkx_edges(self.G, initial_pos, ax=ax1)
+            nx.draw_networkx_labels(self.G, initial_pos, font_size=8, font_color="black", ax=ax1)
+            ax1.set_title("Initial Graph Layout")
+
+            # Draw NetworkX's planar layout
+            pos_original = nx.planar_layout(self.G)
+            nx.draw_networkx_nodes(self.G, pos_original, node_size=50, node_color="blue", ax=ax2)
+            nx.draw_networkx_edges(self.G, pos_original, ax=ax2)
+            nx.draw_networkx_labels(self.G, pos_original, font_size=8, font_color="black", ax=ax2)
+            ax2.set_title("NetworkX's Planar Layout")
 
             # Get planar layout and scale to integer grid
             pos_planar = nx.planar_layout(self.G)
             scaled_pos = self.scale_layout_to_integer_grid(pos_planar)
 
             # Draw scaled layout
-            nx.draw_networkx_nodes(self.G, scaled_pos, node_size=50, node_color="blue", ax=ax2)
-            nx.draw_networkx_edges(self.G, scaled_pos, ax=ax2)
-            nx.draw_networkx_labels(self.G, scaled_pos, font_size=8, font_color="white", ax=ax2)
+            nx.draw_networkx_nodes(self.G, scaled_pos, node_size=50, node_color="blue", ax=ax3)
+            nx.draw_networkx_edges(self.G, scaled_pos, ax=ax3)
+            nx.draw_networkx_labels(self.G, scaled_pos, font_size=8, font_color="black", ax=ax3)
 
-            # Add grid to second plot
-            ax2.grid(False)
-            ax2.set_xticks(range(self.grid_width))
-            ax2.set_yticks(range(self.grid_height))
-            ax2.set_title("Integer Grid Layout")
-
-            # Set limits for second plot
-            ax2.set_xlim(-1, self.grid_width)
-            ax2.set_ylim(-1, self.grid_height)
+            # Add grid to scaled layout plot
+            ax3.grid(True, linestyle='--', alpha=0.3)
+            ax3.set_xticks(range(self.grid_width))
+            ax3.set_yticks(range(self.grid_height))
+            ax3.set_title("Modified Planar Layout")
+            ax3.set_xlim(-1, self.grid_width)
+            ax3.set_ylim(-1, self.grid_height)
 
             plt.tight_layout()
             plt.show()
@@ -147,3 +152,26 @@ class PlanarLayoutDrawer:
                 print(f"Node {node}: {pos}")
         else:
             print("Graph is not planar; skipping planar layout.")
+
+    def _export_to_json(self, scaled_pos):
+        # Create a copy of the graph data to avoid modifying the original
+        export_data = {
+            "nodes": [],
+            "edges": self.graph_data["edges"],
+            "width": self.grid_width,
+            "height": self.grid_height
+        }
+
+        # Update node positions with scaled positions
+        for node in self.graph_data["nodes"]:
+            node_id = node["id"]
+            x, y = scaled_pos[node_id]
+            export_data["nodes"].append({
+                "id": node_id,
+                "x": x,
+                "y": y
+            })
+
+        with open(self.output_file, 'w') as f:
+            json.dump(export_data, f, indent=4)
+        print(f"Graph layout exported to {self.output_file}")

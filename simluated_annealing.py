@@ -2,22 +2,57 @@ import random
 import math
 import networkx as nx
 import numpy as np
+import json
+import matplotlib.pyplot as plt
 from solve_least_crossing import solve_least_crossings
+import networkx as nx
+from GridSnapper import apply_grid_snapping
+import time
+
 
 class SimulatedAnnealingDrawer:
-    def __init__(self, graph_data, max_iterations=10, initial_temp=100.0, cooling_rate=0.95):
-        self.graph_data = graph_data
+    def __init__(self, graph_data, max_iterations=1000, initial_temp=100.0, cooling_rate=0.95,
+                 output_file='optimized_graph_layout.json'):
+        self.graph_data = graph_data.copy()  # Create a copy to avoid modifying the original
         self.max_iterations = max_iterations
         self.temp = initial_temp
         self.cooling_rate = cooling_rate
         self.width = graph_data["width"]
         self.height = graph_data["height"]
+        self.output_file = output_file
+
+        # Generate initial Kamada-Kawai layout
+        self._generate_kamada_kawai_layout()
 
         self.G = nx.Graph()
         self.pos = {}
         self._load_graph()
         self.optimize()
         self.draw("final_graph_layout.svg")
+        self._export_to_json()
+
+    def _generate_kamada_kawai_layout(self):
+        # Create a temporary graph for Kamada-Kawai layout
+        G = nx.Graph()
+        for node in self.graph_data["nodes"]:
+            G.add_node(node["id"])
+        for edge in self.graph_data["edges"]:
+            G.add_edge(edge["source"], edge["target"])
+
+        # Compute Kamada-Kawai layout (values in range [-1,1])
+        pos = nx.kamada_kawai_layout(G)
+
+        # Map positions from [-1,1] to [0, width] and [0, height]
+        for node, (x, y) in pos.items():
+            new_x = (x + 1) / 2 * self.width
+            new_y = (y + 1) / 2 * self.height
+
+            # Update node positions in graph_data
+            for graph_node in self.graph_data["nodes"]:
+                if graph_node["id"] == node:
+                    graph_node["x"] = new_x
+                    graph_node["y"] = new_y
+                    break
 
     def _load_graph(self):
         for node in self.graph_data["nodes"]:
@@ -48,13 +83,18 @@ class SimulatedAnnealingDrawer:
     def _calculate_max_crossings(self, crossings):
         return max(crossings.values())
 
+    import time  # Import time module at the top
+
     def optimize(self):
+        start_time = time.time()  # Start measuring time
+
         self._sync_positions_with_graph()
         current_pos, current_crossings_dict, _ = solve_least_crossings(self.G, type="optimized")
         current_crossings = self._calculate_max_crossings(current_crossings_dict)
 
         for iteration in range(self.max_iterations):
-            if self.temp <= 0:
+            if self.temp <= 0 or current_crossings == 1:  # Stop if crossings reach 1
+                print("Early stopping: Crossing count reached 1.")
                 break
 
             self._sync_positions_with_graph()
@@ -76,7 +116,8 @@ class SimulatedAnnealingDrawer:
             _, test_crossings_dict, _ = solve_least_crossings(self.G, type="optimized")
             test_crossings = self._calculate_max_crossings(test_crossings_dict)
 
-            if test_crossings < current_crossings or random.random() < math.exp((current_crossings - test_crossings) / self.temp):
+            if test_crossings < current_crossings or random.random() < math.exp(
+                    (current_crossings - test_crossings) / self.temp):
                 current_crossings = test_crossings
             else:
                 self.pos[node_to_move] = original_position
@@ -84,11 +125,34 @@ class SimulatedAnnealingDrawer:
             self.temp *= self.cooling_rate
             print(f"Iteration {iteration + 1}, Temperature: {self.temp:.2f}, Current Crossings: {current_crossings}")
 
-
         for node in self.graph_data["nodes"]:
             node_id = node["id"]
             node["x"], node["y"] = self.pos[node_id]
-        print("Optimization complete.")
+
+        end_time = time.time()  # End measuring time
+        runtime = end_time - start_time  # Calculate runtime
+        print(f"Optimization complete. Total runtime: {runtime:.4f} seconds")
+
+    def _export_to_json(self):
+        # Create a copy of the graph data to avoid modifying the original
+        export_data = {
+            "nodes": [
+                {
+                    "id": node["id"],
+                    "x": int(node["x"]),  # Convert np.int64 → Python int
+                    "y": int(node["y"])  # Convert np.int64 → Python int
+                }
+                for node in self.graph_data["nodes"]
+            ],
+            "edges": self.graph_data["edges"],
+            "width": int(self.width),  # Convert width to standard int
+            "height": int(self.height)  # Convert height to standard int
+        }
+
+        with open(self.output_file, 'w') as f:
+            json.dump(export_data, f, indent=4)
+
+        print(f"Graph layout exported to {self.output_file}")
 
     def draw(self, filename="simulated_annealing_layout.svg"):
         import matplotlib.pyplot as plt

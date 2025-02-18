@@ -22,7 +22,7 @@ class InitialLayoutDrawer:
         pos = {node["id"]: (node["x"], node["y"]) for node in graph_data["nodes"]}
 
         # Apply grid snapping to the computed positions
-        pos = apply_grid_snapping(self.G, pos, self.width, self.height)
+        # pos = apply_grid_snapping(self.G, pos, self.width, self.height)
 
         draw_with_crossings(self.G, pos, "Initial Layout", "initial_layout.svg", "initial")
         plt.show()

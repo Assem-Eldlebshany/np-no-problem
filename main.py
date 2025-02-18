@@ -21,10 +21,10 @@ class ScalableGraphDrawer:
             print(f"Error: JSON format in the file {filename} is incorrect.")
             return
 
-        # PlanarLayoutDrawer(self.graph_data)
+        PlanarLayoutDrawer(self.graph_data)
         # InitialLayoutDrawer(self.graph_data)
         # SpringLayoutDrawer(self.graph_data)
-        KamadaKawaiLayoutDrawer(self.graph_data)
+        # KamadaKawaiLayoutDrawer(self.graph_data)
         # GradientLayoutDrawer(self.graph_data, alpha=1, learning_rate=0.1, max_iter=1000)
         # SimulatedAnnealingDrawer(self.graph_data)
 

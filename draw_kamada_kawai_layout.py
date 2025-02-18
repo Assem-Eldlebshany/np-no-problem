@@ -1,11 +1,12 @@
 import matplotlib.pyplot as plt
 import networkx as nx
+import json  # Import JSON to save layout
 from draw_with_crossings import draw_with_crossings
 from GridSnapper import apply_grid_snapping  # Import the grid snapping function
 
 
 class KamadaKawaiLayoutDrawer:
-    def __init__(self, graph_data):
+    def __init__(self, graph_data, output_file="kamada_kawai_layout.json"):
         self.G = nx.Graph()
         for node in graph_data["nodes"]:
             self.G.add_node(node["id"])
@@ -16,6 +17,7 @@ class KamadaKawaiLayoutDrawer:
         self.width = graph_data.get('width', 10)  # Default width
         self.height = graph_data.get('height', 10)  # Default height
 
+        self.output_file = output_file  # File to save layout
         self.draw_kamada_kawai_layout()
 
     def draw_kamada_kawai_layout(self):
@@ -32,8 +34,24 @@ class KamadaKawaiLayoutDrawer:
         # Apply grid snapping
         pos = apply_grid_snapping(self.G, pos, self.width, self.height)
 
+        # Save positions to a JSON file
+        self.save_layout(pos)
+
         # Draw the graph with grid-snapped positions
         draw_with_crossings(self.G, pos, "Kamada-Kawai Grid Snapped Layout", "kamada_kawai_snapped_layout.svg",
                             "kamada")
 
         plt.show()
+
+    def save_layout(self, pos):
+        graph_data = {
+            "nodes": [{"id": node, "x": int(x), "y": int(y)} for node, (x, y) in pos.items()],
+            "edges": [{"source": u, "target": v} for u, v in self.G.edges()],
+            "width": self.width,
+            "height": self.height
+        }
+
+        with open(self.output_file, 'w') as f:
+            json.dump(graph_data, f, indent=4)
+
+        print(f"Graph layout saved to {self.output_file}")

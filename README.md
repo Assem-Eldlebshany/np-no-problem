@@ -9,6 +9,10 @@ After cloning the repository, navigate to the project directory in your terminal
 pip install -r requirements.txt
 ```
 
+After that to check that the graph is planar you can uncomment the ```PlanarLayoutDrawer(self.graph_data)``` to check if it is planar, otherwise you can call the ```SimulatedAnnealingDrawer(self.graph_data)``` which inherently calls the kamada kawai, gradient descent and simulated annealing finally. 
+
+The graphs that are in the file testGraph are the ones that the algorithm runs on.
+
 # Graph Drawing Contest
 
 This repository contains a solution to the Graph Drawing Contest, where the goal was to minimize edge crossings in a 2D graph layout. The graph is represented using a set of vertices and edges, provided in a JSON file. The challenge was to rearrange the graph layout such that the number of edge crossings is minimized while preserving the graph's structure.
@@ -39,7 +43,7 @@ The input file should be in JSON format, containing two primary components:
   ]
 }
 ```
-## Techniques Used
+## Preprocessing Techniques Used
 
 The following techniques were implemented to optimize the graph layout and minimize edge crossings:
 
@@ -51,7 +55,16 @@ A force-directed layout algorithm that minimizes the energy of the system, where
 
 An optimization algorithm that attempts to minimize the number of edge crossings by adjusting node positions iteratively based on temperature-controlled random movements. The algorithm works by exploring different configurations and gradually reducing the "temperature" to allow smaller changes as the system approaches an optimal layout. This method can efficiently search for the optimal placement of nodes by balancing exploration of different configurations with a steady reduction in randomness.
 
-### 3. Spring Layout
+## Processing Techniques Used
 
-A classical physics-based algorithm where nodes repel each other, and edges act like springs, pulling nodes together, resulting in a balanced layout. In this method, the forces applied to the nodes are computed iteratively to achieve a configuration where nodes are spaced apart without overlap, and the edges between them are as evenly distributed as possible. This technique is widely used for visualizing graph structures in a way that is easy to interpret.
+### 1. Gradient Descent
 
+Node positions are iteratively adjusted based on pairwise distances. Edges act like springs pulling connected nodes closer, while unconnected nodes repel each other. The objective function balances these forces, minimizing edge crossings. The final positions are snapped to a grid before visualization.
+
+### 2. Simulated Annealing
+
+Optimization technique inspired by the process of metal cooling, to reduce edge crossings. It begins with an initial Kamada-Kawai layout and iteratively adjusts node positions. Each move is accepted if it lowers crossings or, with a probability decreasing over time, if it doesn't. This probability is governed by a cooling schedule. The algorithm terminates early if the crossings reach one or the maximum iterations are met. The final layout is exported and visualized.
+
+
+## Results
+There was not enough time to put the results in a csv so for now we print the results for all the graphs in the file testGraph one by one and the runtime as well.
